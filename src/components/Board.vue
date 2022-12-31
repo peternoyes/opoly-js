@@ -161,7 +161,7 @@ export default {
         metrics = ctx.measureText(price)
         ctx.fillText(price, (width - metrics.width) / 2, height - dotWidth - fontSize * 0.6)      
       } else {
-        var text = card.type.charAt(0).toUpperCase() + card.type.slice(1);
+        var text = card.name
         fontSize = Math.floor(width / 6)        
         ctx.font = `${fontSize}px 'Roboto Condensed'`;
         metrics = ctx.measureText(text)

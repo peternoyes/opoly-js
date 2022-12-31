@@ -100,8 +100,8 @@ export default {
         }
       },
       bank: 5000,
-      normalTimeout: 1500,
-      cardTimeout: 3000,
+      normalTimeout: 1500 / 1500,
+      cardTimeout: 3000 / 3000,
       playerTypes: [
         "human",
         "ai",
@@ -459,7 +459,7 @@ export default {
       }
       return false
     },
-    processSquare(player, s) {      
+    processSquare(player, s) {
       switch (s.type) {
         case "property": 
           if (!s.owner) {                    
@@ -592,8 +592,8 @@ export default {
               player.position = 0
               this.nextState(() => this.processSquare(player, s), this.cardTimeout)
               return
-            case "lost":
-              s = this.findSquareByType("bus")
+            case "jail":
+              s = this.findSquareByType("goToJail")
               player.position = this.game.board.squares.indexOf(s)
               this.nextState(() => this.processSquare(player, s), this.cardTimeout)
               return
@@ -630,8 +630,8 @@ export default {
 
           this.nextState(() => this.passDice(player), this.cardTimeout)
           return
-        case "bus":
-          s = this.findSquareByType("lost")
+        case "goToJail":
+          s = this.findSquareByType("jail")
           player.position = this.game.board.squares.indexOf(s)          
           if (player.jailOutCards > 0) {
             player.jailOutCards -= 1
@@ -640,7 +640,7 @@ export default {
           } else {            
             player.money -= 3
             this.bank += 3
-            this.validateMoney('lost')
+            this.validateMoney('jail')
             if (this.checkForWinner(player)) {
               return
             }
