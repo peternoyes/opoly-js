@@ -87,16 +87,52 @@ export default {
     },
 
     drawCard(ctx, index, card, width, height) {
+      var i
+      if (card.type == "property" && card.owner) {
+        for (i = 0; i < this.game.players.length; i++) {
+          if (this.game.players[i].name == card.owner) {
+            ctx.save()
+            ctx.globalAlpha = 0.25
+            ctx.beginPath()
+            ctx.rect(0, 0, width, height)
+            ctx.fillStyle = this.game.players[i].color
+            ctx.fill()
+            ctx.restore()
+            break
+          }
+        }
+      }
+        /*
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Price: $" + card.cost, 6, height * 0.2 + 12 + 28)
+        if (card.owner) {
+          ctx.fillText(card.owner, 6, 90)
+        }*/
+
+
       var dotWidth = width / 4
-      var dotOffset = 0
-      for (var i = 0; i < this.game.players.length; i++) {
+      var dotOffset = 0      
+      for (i = 0; i < this.game.players.length; i++) {
         if (this.game.players[i].position == index) {
           ctx.beginPath()
           ctx.ellipse(dotOffset + dotWidth / 2, height - dotWidth / 2, dotWidth / 2 - 2, dotWidth / 2 - 2, 0, 0, Math.PI * 2)
           ctx.fillStyle = this.game.players[i].color
           ctx.fill()
           dotOffset += dotWidth
+          ctx.strokeStyle = "black"
+          ctx.stroke()
         }
+      }
+
+      switch (card.type) {
+        case "property": 
+          ctx.beginPath()
+          ctx.fillStyle = card.group
+          ctx.rect(0, 0, width, height * 0.2)
+          ctx.fill()
+          ctx.strokeStyle = "black"
+          ctx.stroke()
+          break
       }
 
       ctx.beginPath()
@@ -104,16 +140,32 @@ export default {
       ctx.strokeStyle = "black"
       ctx.fillStyle = "black"  
       ctx.rect(0, 0, width, height)
-      ctx.font = "10px sans-serif";
-      if (card.type == "property") {        
-        ctx.fillText(card.name, 6, 16)
-        ctx.font = "24px sans-serif";
-        ctx.fillText("$" + card.cost, 6, 40)
-        if (card.owner) {
-          ctx.fillText(card.owner, 6, 70)
+      var fontSize = Math.floor(width / 7)
+      ctx.font = `${fontSize}px 'Roboto Condensed'`;      
+      var horizBuffer = Math.floor(width / 20)
+      if (card.type == "property") {
+        var metrics = ctx.measureText(card.name)        
+        var words = [ card.name ]
+        if (metrics.width > (width - (horizBuffer * 2))) {
+          words = card.name.split(' ')
         }
-      } else {        
-        ctx.fillText(card.type, 6, 16)
+
+        var y = height * 0.25 + fontSize * 1
+        for (i = 0; i < words.length; i++) {
+          metrics = ctx.measureText(words[i])
+          ctx.fillText(words[i], (width - metrics.width) / 2, y)
+          y += fontSize * 1.05
+        }
+
+        var price = "Price: $" + card.cost
+        metrics = ctx.measureText(price)
+        ctx.fillText(price, (width - metrics.width) / 2, height - dotWidth - fontSize * 0.6)      
+      } else {
+        var text = card.type.charAt(0).toUpperCase() + card.type.slice(1);
+        fontSize = Math.floor(width / 6)        
+        ctx.font = `${fontSize}px 'Roboto Condensed'`;
+        metrics = ctx.measureText(text)
+        ctx.fillText(text, (width - metrics.width) / 2, height / 2)
       }
       ctx.stroke()
     }

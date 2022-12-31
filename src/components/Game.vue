@@ -1,65 +1,67 @@
 <template>
-  <div>    
-    <Board :game="game"/>
-    <p>Center: ${{ game.board.center }}</p>
-    <p>{{ game.message }}</p>
-    <p v-if="game.askToBuy">
-      <button @click="yesPurchase">Yes</button>
-      <button  @click="noPurchase">No</button>
-    </p>
-    <p v-if="game.trade.inTrade">
-      <select v-model="game.trade.mySelected">
-        <option v-for="trade in game.trade.mine" v-bind:key="trade">{{ trade }}</option>
-      </select>
-      <span> for </span>
-      <select v-model="game.trade.optionSelected">
-        <option v-for="trade in game.trade.options" v-bind:key="trade">{{ trade }}</option>
-      </select>
-      <button @click="yesTrade">Trade</button>
-    </p>
-    <p v-if="game.teamwork.inTeamwork">
-      <select v-model="game.teamwork.optionSelected">
-        <option v-for="option in game.teamwork.options" v-bind:key="option">{{ option }}</option>
-      </select>
-      <button @click="yesTeamwork">Select</button>
-    </p>
-    <p v-if="game.turn">Turn: {{ game.turn }}</p>
-    <p v-if="!game.gameRunning">
-      <select v-model="theme">
-        <option v-for="theme in themes" v-bind:key="theme">{{ theme }}</option>
-      </select>
-    </p>
-    <table class="center">
-      <thead>
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Money</th>
-            <th>{{ game.jailOutCardTitle }}</th>
-            <th>Lost Turn</th>
-            <th>Games Won</th>
-        </tr>
-      </thead>
-      <tbody>        
-        <tr v-for="player in game.players" v-bind:key="player.key" :style='getTableRowStyle(player)'>
-          <td v-if="!game.gameRunning"><input type="text" v-model="player.name"></td>
-          <td v-if="game.gameRunning">{{ player.name }}</td>
-          <td v-if="!game.gameRunning">
-            <select v-model="player.type">
-              <option v-for="type in playerTypes" v-bind:key="type">{{ type }}</option>
-            </select>
-          </td>
-          <td v-if="game.gameRunning">{{ player.type }}</td>          
-          <td>${{ player.money }}</td>          
-          <td>{{ player.jailOutCards }}</td>
-          <td>{{ player.loseturn }}</td>
-          <td>{{ player.gamesWon }}</td>
-        </tr>        
-      </tbody>
-    </table>
-    <p>      
-      <button v-if="!game.gameRunning" @click="startGame()">Start Game</button>
-    </p>
+  <div id="container">    
+    <Board class="canvas" :game="game"/>
+    <div id="overlay">
+      <p>Center: ${{ game.board.center }}</p>
+      <p>{{ game.message }}</p>
+      <p v-if="game.askToBuy">
+        <button @click="yesPurchase">Yes</button>
+        <button  @click="noPurchase">No</button>
+      </p>
+      <p v-if="game.trade.inTrade">
+        <select v-model="game.trade.mySelected">
+          <option v-for="trade in game.trade.mine" v-bind:key="trade">{{ trade }}</option>
+        </select>
+        <span> for </span>
+        <select v-model="game.trade.optionSelected">
+          <option v-for="trade in game.trade.options" v-bind:key="trade">{{ trade }}</option>
+        </select>
+        <button @click="yesTrade">Trade</button>
+      </p>
+      <p v-if="game.teamwork.inTeamwork">
+        <select v-model="game.teamwork.optionSelected">
+          <option v-for="option in game.teamwork.options" v-bind:key="option">{{ option }}</option>
+        </select>
+        <button @click="yesTeamwork">Select</button>
+      </p>
+      <p v-if="game.turn">Turn: {{ game.turn }}</p>
+      <p v-if="!game.gameRunning">
+        <select v-model="theme">
+          <option v-for="theme in themes" v-bind:key="theme">{{ theme }}</option>
+        </select>
+      </p>
+      <table class="center">
+        <thead>
+          <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Money</th>
+              <th>{{ game.jailOutCardTitle }}</th>
+              <th>Lost Turn</th>
+              <th>Games Won</th>
+          </tr>
+        </thead>
+        <tbody>        
+          <tr v-for="player in game.players" v-bind:key="player.key" :style='getTableRowStyle(player)'>
+            <td v-if="!game.gameRunning"><input type="text" v-model="player.name"></td>
+            <td v-if="game.gameRunning">{{ player.name }}</td>
+            <td v-if="!game.gameRunning">
+              <select v-model="player.type">
+                <option v-for="type in playerTypes" v-bind:key="type">{{ type }}</option>
+              </select>
+            </td>
+            <td v-if="game.gameRunning">{{ player.type }}</td>          
+            <td>${{ player.money }}</td>          
+            <td>{{ player.jailOutCards }}</td>
+            <td>{{ player.loseturn }}</td>
+            <td>{{ player.gamesWon }}</td>
+          </tr>        
+        </tbody>
+      </table>
+      <p>      
+        <button v-if="!game.gameRunning" @click="startGame()">Start Game</button>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -98,8 +100,8 @@ export default {
         }
       },
       bank: 5000,
-      normalTimeout: 1500 / 1500,
-      cardTimeout: 3000 / 3000,
+      normalTimeout: 1500,
+      cardTimeout: 3000,
       playerTypes: [
         "human",
         "ai",
@@ -715,6 +717,14 @@ td {
 .center {
   margin-left: auto;
   margin-right: auto;
+}
+
+#overlay {
+  position: absolute;
+  left: 50%;
+  top: 450px;
+  width: 600px;
+  transform: translate(-50%,0);
 }
 </style>
 

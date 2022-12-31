@@ -47,7 +47,7 @@
     { "type": "payeveryone", "money": 2, "text": "Challenge! Garbage Pile! Your campsite is a mess! Pay every player $2 to help clean everything up."},
     { "type": "loseturn", "text": "Challenge! A sneaky coyote steals your map! You have to go back to the Visitor Center for a new one. Lose one turn."},
     { "type": "everyonepays", "money": 2, "text": "Challenge! Jr. Ranger program! Collect $2 from every player that loves animals"},        
-    { "type": "jump", "money": "Acadia", "text": "Discover! Spot an eagle swooping home to it's nest! Move forward to Acadia. If it has a market on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
+    { "type": "jump", "money": "Acadia", "text": "Discover! Spot an eagle swooping home to it's nest! Move forward to Acadia. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
     { "type": "jump", "money": "Zion", "text": "Discover! A desert tortoise crosses the road right in front of your car! Move forward to Zion. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
     { "type": "jump", "money": "Yellowstone", "text": "Discover! Awooooooo! Hear the howl of a wolf! Move forward to Yellowstone. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
     { "type": "jump", "money": "Yosemite", "text": "Discover! Spot a bobcat through your binoculars! Move forward to Yosemite. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
