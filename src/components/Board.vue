@@ -13,7 +13,7 @@ export default {
     return {
       id: undefined,
       context: null,
-      size: 1024      
+      size: 768      
     }
   },
   methods: {    

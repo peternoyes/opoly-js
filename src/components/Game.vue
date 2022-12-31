@@ -722,8 +722,8 @@ td {
 #overlay {
   position: absolute;
   left: 50%;
-  top: 450px;
-  width: 600px;
+  top: 320px;
+  width: 500px;
   transform: translate(-50%,0);
 }
 </style>
