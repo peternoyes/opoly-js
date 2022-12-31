@@ -28,7 +28,7 @@ export default {
         for (i = 0; i < 8; i++) {
           isCorner = (i % 8) == 0
           ctx.save()          
-          ctx.translate(0, this.size - cardHeight - ((i % 8)* cardWidth))
+          ctx.translate(0, this.size - cardHeight - ((i % 8) * cardWidth))
           ctx.translate(cardHeight / 2, cardHeight / 2)
           ctx.rotate(Math.PI / 2)
           ctx.translate(-cardHeight / 2, -cardHeight / 2)    
@@ -41,11 +41,8 @@ export default {
         }
         for (i = 8; i < 16; i++) {
           isCorner = (i % 8) == 0          
-          ctx.save()          
-          ctx.translate((i % 8 - 1) * cardWidth + cardHeight, 0)
-          ctx.translate(cardWidth / 2, cardHeight / 2)
-          ctx.rotate(Math.PI)
-          ctx.translate(-cardWidth / 2, -cardHeight / 2)    
+          ctx.save()              
+          ctx.translate((i % 8 - 1) * (isCorner ? cardHeight : cardWidth) + cardHeight, 0)
           if (isCorner) {   
             this.drawCard(ctx, i, this.game.board.squares[i], cardHeight, cardHeight)
           } else {                   
@@ -71,9 +68,6 @@ export default {
           isCorner = (i % 8) == 0          
           ctx.save()          
           ctx.translate((7 - (i % 8)) * cardWidth + cardHeight, this.size - cardHeight, 0)
-          ctx.translate(cardWidth / 2, cardWidth / 2)
-          ctx.rotate(Math.PI * 2)
-          ctx.translate(-cardWidth / 2, -cardWidth / 2)    
           if (isCorner) {   
             this.drawCard(ctx, i, this.game.board.squares[i], cardHeight, cardHeight)
           } else {                   
@@ -102,13 +96,6 @@ export default {
           }
         }
       }
-        /*
-        ctx.font = "20px sans-serif";
-        ctx.fillText("Price: $" + card.cost, 6, height * 0.2 + 12 + 28)
-        if (card.owner) {
-          ctx.fillText(card.owner, 6, 90)
-        }*/
-
 
       var dotWidth = width / 4
       var dotOffset = 0      
