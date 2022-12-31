@@ -100,8 +100,8 @@ export default {
         }
       },
       bank: 5000,
-      normalTimeout: 1500 / 1500,
-      cardTimeout: 3000 / 3000,
+      normalTimeout: 1500,
+      cardTimeout: 3000,
       playerTypes: [
         "human",
         "ai",
@@ -405,12 +405,12 @@ export default {
         }
       }
 
+      this.game.teamwork.money = money
       if (player.type == "human") {
         this.game.teamwork.optionSelected = this.game.teamwork.options[0]
-        this.game.teamwork.inTeamwork = true
-        this.game.teamwork.money = money
+        this.game.teamwork.inTeamwork = true        
       } else {
-        // AI Teamwork
+        // AI Teamwork (all types of AI do the same thing)
         this.game.teamwork.options.sort((a, b) => a.money > b.money ? 1 : -1)
         var option = this.findPlayer(this.game.teamwork.options[0])
         player.money += this.game.teamwork.money
