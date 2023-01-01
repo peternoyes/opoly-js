@@ -28,8 +28,13 @@
       <p v-if="!game.gameRunning">
         <select v-model="theme">
           <option v-for="theme in themes" v-bind:key="theme">{{ theme }}</option>
-        </select>
+        </select>        
       </p>
+      <p>
+        <select v-model="speed">
+          <option v-for="speed in speeds" v-bind:key="speed">{{ speed }}</option>
+        </select>        
+      </p>      
       <table class="center">
         <thead>
           <tr>
@@ -102,6 +107,12 @@ export default {
       bank: 5000,
       normalTimeout: 1500,
       cardTimeout: 3000,
+      speed: "slow",
+      speeds: [
+        "slow",
+        "fast",
+        "superspeed"
+      ],
       playerTypes: [
         "human",
         "ai",
@@ -117,6 +128,22 @@ export default {
   watch: {
     theme(/*newTheme, oldTheme*/) {
       this.resetGame()
+    },
+    speed(newSpeed) {
+      switch (newSpeed) {
+        case "slow":
+          this.normalTimeout = 2000
+          this.cardTimeout = 5000
+          break
+        case "fast":
+          this.normalTimeout = 1000
+          this.cardTimeout = 2500
+          break
+        case "superspeed":
+          this.normalTimeout = 1
+          this.cardTimeout = 1
+          break
+      }
     }
   },
   name: 'Game',
@@ -450,7 +477,9 @@ export default {
           }
         }
 
-        // alert(`${winner.name} won with $${winner.money}`)
+        if (this.speed != "superspeed") {
+          alert(`${winner.name} won with $${winner.money}`)
+        }
 
         winner.gamesWon += 1
         this.resetGame()
