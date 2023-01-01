@@ -105,7 +105,8 @@ export default {
       playerTypes: [
         "human",
         "ai",
-        "badai"
+        "badai",
+        "horribleai"
        ],
       themes: [
         "space",
@@ -322,7 +323,7 @@ export default {
           this.game.trade.inTrade = true        
         } else {
           // AI Trade
-          if (player.type == "ai") {
+          if (player.type == "ai" || player.type == "horribleai") {
             var possibilities = []          
             for (i = 0; i < this.game.trade.mine.length; i++) {
               var m = this.findSquare(this.game.trade.mine[i])
@@ -367,7 +368,12 @@ export default {
             }
 
             possibilities.sort((a, b) => a.score > b.score ? 1 : -1)
-            var t = possibilities[possibilities.length - 1]
+            var t = {}
+            if (player.type == "ai") {
+              t = possibilities[possibilities.length - 1] // Take the best option which is at the end of the list
+            } else if (player.type == "horribleai") {
+              t = possibilities[0]  // Take the worst option which is at the front of the list
+            }
             t.mine.owner = t.option.owner
             t.option.owner = player.name
             this.game.message = `${t.mine.name} was traded for ${t.option.name}`
@@ -475,8 +481,9 @@ export default {
                   this.bank += s.cost                
                   this.game.message = `${player.name} buys ${s.name}`
                   this.nextState(() => this.passDice(player))
-                } else if (player.type == "badai") {
-                  if (Math.random() > 0.5) {
+                } else if (player.type == "badai" || player.type == "horribleai") {
+                  var cutoff = player.type == "badai" ? 0.5 : 0.7
+                  if (Math.random() > cutoff) {
                     s.owner = player.name
                     player.money -= s.cost
                     this.bank += s.cost                
