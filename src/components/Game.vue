@@ -44,11 +44,12 @@
               <th>{{ game.jailOutCardTitle }}</th>
               <th>Lost Turn</th>
               <th>Games Won</th>
+              <th v-if="!game.gameRunning && canAddPlayer"><button @click="addPlayer()">+</button></th>
           </tr>
         </thead>
         <tbody>        
           <tr v-for="player in game.players" v-bind:key="player.key" :style='getTableRowStyle(player)'>
-            <td v-if="!game.gameRunning"><input type="text" v-model="player.name"></td>
+            <td v-if="!game.gameRunning"><input type="text" v-model="player.name" size="10"></td>
             <td v-if="game.gameRunning">{{ player.name }}</td>
             <td v-if="!game.gameRunning">
               <select v-model="player.type">
@@ -60,9 +61,10 @@
             <td>{{ player.jailOutCards }}</td>
             <td>{{ player.loseturn }}</td>
             <td>{{ player.gamesWon }}</td>
+            <td v-if="!game.gameRunning && canRemovePlayer"><button @click="removePlayer(player)">X</button></td>
           </tr>        
         </tbody>
-      </table>
+      </table>      
       <p>      
         <button v-if="!game.gameRunning" @click="startGame()">Start Game</button>
       </p>
@@ -123,6 +125,14 @@ export default {
         "nationalparks",
       ],
       theme: "nationalparks"
+    }
+  },
+  computed: {
+    canAddPlayer() {
+      return this.game.players.length < 4
+    },
+    canRemovePlayer() {
+      return this.game.players.length > 2
     }
   },
   watch: {
@@ -202,6 +212,38 @@ export default {
         this.game.board.squares[this.randomAvailableProperty()].owner = this.game.players[i].name        
       }      
     },
+    addPlayer() {
+      var colors = ["red", "yellow", "blue", "green"]
+      var playerNames = ["Player 1", "Player 2", "Player 3", "Player 4"]
+      for (var i = 0; i < this.game.players.length; i++) {
+        var p = this.game.players[i]
+        var index = colors.indexOf(p.color)
+        colors.splice(index, 1)
+        index = playerNames.indexOf(p.name)
+        if (index >= 0) {
+          playerNames.splice(index, 1)
+        }
+      }
+
+      var player = {
+        type: "ai",
+        name: playerNames[0],
+        money: 35,
+        color: colors[0],
+        position: 0,
+        jailOutCards: 0,
+        loseturn: false,
+        gamesWon: 0
+      }
+
+      this.game.players.push(player)
+      this.resetGame()
+    },
+    removePlayer(player) {       
+       var i = this.game.players.indexOf(player)       
+       this.game.players.splice(i, 1)
+       this.resetGame()
+    },
     validateMoney(where) {
       var total = this.bank
       for (var i = 0; i < this.game.players.length; i++) {
@@ -209,7 +251,7 @@ export default {
       }
       total += this.game.board.center
 
-      if (total != (5000 + (35 * 4) + 2)) {
+      if (total != (5000 + (35 * this.game.players.length) + 2)) {
         alert(where)
       }
     },
