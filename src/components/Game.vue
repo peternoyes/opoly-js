@@ -124,6 +124,7 @@ export default {
       themes: [
         "space",
         "nationalparks",
+        "western",
       ],
       theme: "nationalparks"
     }
@@ -165,6 +166,7 @@ export default {
     resetGame() {
       const space = require("../assets/space.json")
       const nationalParks = require("../assets/nationalparks.json")
+      const western = require("../assets/western.json")
       var json = {}
       switch (this.theme) {
         case "space": 
@@ -172,6 +174,9 @@ export default {
           break
         case "nationalparks":
           json = nationalParks
+          break
+        case "western": 
+          json = western
           break
       }
       
