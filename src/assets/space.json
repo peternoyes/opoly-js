@@ -56,7 +56,7 @@
       { "type": "jump", "square": "Sun", "text": "Star! Find the Sun! Move forward to Sun. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass HOME BASE! Collect $1."},
       { "type": "jump", "square": "Earendel", "text": "Star! Earendel is close by-what a great time for a fly! Move forward to Earendel. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass HOME BASE! Collect $1."},
       { "type": "go", "text": "Challenge! All packed for your space adventure! Advance to HOME BASE! Collect $1"},
-      { "type": "lost", "text": "Challenge! Lose track of where you are while you're exploring! You go directly to the DEEP SPACE. Do not pass HOME BASE! Do not collect $1" },
+      { "type": "jail", "text": "Challenge! Lose track of where you are while you're exploring! You go directly to the DEEP SPACE. Do not pass HOME BASE! Do not collect $1" },
       { "type": "unowned", "text": "Adventure! Go flying and discover amazing planets! Move your piece to the next unowned property. Now you can buy it! If there is no unowned property, do not move and place card at the bottom of the pile."},
       { "type": "bankerpayseveryone", "money": 1, "text": "Challenge! The whole group needs to help steer the ship. All players drive the ship and collect $1 from the Banker."},
       { "type": "bankerpays", "money": 2, "text": "Challenge! Act like an alien! Make a noise like an alien and collect $2. No noise, no money!"},

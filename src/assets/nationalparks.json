@@ -56,7 +56,7 @@
     { "type": "jump", "square": "Big Dipper", "text": "Night Sky! Find the Big Dipper and use it to spot the North Star! Move forward to Big Dipper. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
     { "type": "jump", "square": "Full Moon", "text": "Night Sky! There's a full moon out-what a great night for a hike! Move forward to Full Moon. If it has a marker on it, pay that player. If it does not have a marker you can buy it. If you pass GO ON VACATION! Collect $1."},
     { "type": "go", "text": "Challenge! All packed for your National Parks adventure! Advance to GO ON VACATION! Collect $1"},
-    { "type": "lost", "text": "Challenge! Lose track of time while you're exploring! You go directly to the GOT LOST. Do not pass GO ON VACATION! Do not collect $1" },
+    { "type": "jail", "text": "Challenge! Lose track of time while you're exploring! You go directly to the GOT LOST. Do not pass GO ON VACATION! Do not collect $1" },
     { "type": "unowned", "text": "Adventure! Go biking and sicover amazing landscapes! Move your piece to the next unowned property. Now you can buy it! If there is no unowned property, do not move and place card at the bottom of the pile."},
     { "type": "bankerpayseveryone", "money": 1, "text": "Challenge! The whole group needs to help steer the raft. All players stand and do rowing moves with imaginary oars and collect $1 from the Banker."},
     { "type": "bankerpays", "money": 2, "text": "Challenge! Act like an animal! Make a noise like your favorite animal and collect $2. No noise, no money!"},
