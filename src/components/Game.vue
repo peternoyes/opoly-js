@@ -483,7 +483,10 @@ export default {
 
         winner.gamesWon += 1
         this.resetGame()
-        this.nextState(() => this.startGame())
+
+        if (this.speed == "superspeed") {
+          this.nextState(() => this.startGame())
+        }
         return true
       }
       return false
