@@ -1,26 +1,62 @@
 <template>
-  <div id="container">    
-    <Board class="canvas" :game="game"/>
-    <div id="overlay">
+  <div id="container">
+    <div v-if="gameState == 'main'">      
+      <button @click="localGame">Local Game</button>
+      <button @click="onlineGame">Online Game</button>      
+    </div>
+    <div v-if="gameState == 'online'">
+      <p>
+        Name: <input type="text" v-model="online.name" size="10">        
+      </p>
+      <button @click="newOnlineGame">New Game</button>
+      <button @click="joinOnlineGame">Join Game</button>
+    </div>
+    <div v-if="gameState == 'joinEnterId'">
+      ID: <input type="text" v-model="online.gameId" size="10">
+      <button @click="joinOnlineGameComplete">Join</button>    
+    </div>
+    <div v-if="gameState == 'waiting'">
+      <p>
+        <b>{{ online.gameId }}</b>
+      </p>
+      <p v-for="player in online.players" v-bind:key="player">
+        {{ player }}
+      </p>
+      <div v-if="online.myGame">
+        <p>
+          <select v-model="theme">
+            <option v-for="theme in themes" v-bind:key="theme">{{ theme }}</option>
+          </select>          
+        </p>
+        <p>
+          <button @click="startOnlineGame">Start Game</button>
+        </p>
+      </div>
+      <p v-if="!online.myGame">
+        Waiting for host to start the game...
+      </p>
+    </div>
+    <Board v-if="gameState == 'game'" class="canvas" :game="game"/>
+    <div v-if="gameState == 'game'" id="overlay">
       <p>Center: ${{ game.board.center }}</p>
       <p>{{ game.message }}</p>
-      <p v-if="game.askToBuy">
+      <p v-if="askToBuy">
         <button @click="yesPurchase">Yes</button>
         <button  @click="noPurchase">No</button>
       </p>
-      <p v-if="game.trade.inTrade">
-        <select v-model="game.trade.mySelected">
-          <option v-for="trade in game.trade.mine" v-bind:key="trade">{{ trade }}</option>
+      <p v-if="trade.inTrade">
+        <select v-model="trade.mySelected">
+          <option v-for="trade in trade.mine" v-bind:key="trade">{{ trade }}</option>
         </select>
         <span> for </span>
-        <select v-model="game.trade.optionSelected">
-          <option v-for="trade in game.trade.options" v-bind:key="trade">{{ trade }}</option>
+        <select v-model="trade.optionSelected">
+          <option v-for="trade in trade.options" v-bind:key="trade">{{ trade }}</option>
         </select>
         <button @click="yesTrade">Trade</button>
       </p>
-      <p v-if="game.teamwork.inTeamwork">
-        <select v-model="game.teamwork.optionSelected">
-          <option v-for="option in game.teamwork.options" v-bind:key="option">{{ option }}</option>
+      <p v-if="teamwork.inTeamwork">
+        <select v-model="teamwork.optionSelected">
+          <option v-for="option in teamwork.options" v-bind:key="option">{{ option }}</option>
         </select>
         <button @click="yesTeamwork">Select</button>
       </p>
@@ -88,25 +124,35 @@ export default {
         jailOutCardText: "",
         jailOutCard: null,
         players: [],
+        bank: 5000,
         turn: "",
-        message: "",
-        askToBuy: false,        
+        message: "",        
         gameRunning: false,
-        trade: {
-          inTrade: false,
-          mine: [],
-          options: [],
-          mySelected: "",
-          optionSelected: ""
-        },
-        teamwork: {
-          inTeamwork: false,
-          options: [],
-          optionSelected: "",
-          money: 0
-        }
       },
-      bank: 5000,
+      askToBuy: false,
+      trade: {
+        inTrade: false,
+        mine: [],
+        options: [],
+        mySelected: "",
+        optionSelected: ""
+      },
+      teamwork: {
+        inTeamwork: false,
+        options: [],
+        optionSelected: "",
+        money: 0
+      },
+      callbacks: {
+        counter: 0
+      },
+      gameState: "main", 
+      online: {
+        gameId: "",
+        name: "My Name",
+        myGame: false,
+        players: [],
+      },      
       normalTimeout: 1500,
       cardTimeout: 3000,
       speed: "slow",
@@ -163,6 +209,62 @@ export default {
     Board
   },
   methods: {
+    localGame() {      
+      this.gameState = "game"
+    },
+    onlineGame() {
+      this.gameState = "online"
+    },
+    newOnlineGame() {
+      this.sendMessage({
+        player: this.online.name,
+        type: "new"
+      }, (data) => {        
+        if (data.success) {
+          this.online.gameId = data.gameId
+          this.online.players = [this.online.name]
+          this.online.myGame = true
+          this.gameState = 'waiting'
+        } else {
+          alert(data.message)
+        }
+      })
+    },
+    joinOnlineGame() {
+      this.gameState = "joinEnterId"
+    },
+    joinOnlineGameComplete() {
+      this.online.myGame = false
+      this.sendMessage({
+        player: this.online.name,
+        gameId: this.online.gameId,
+        type: "join"
+      }, () => {
+        // TODO: Check response
+        this.gameState = 'waiting'
+      })
+    },
+    startOnlineGame() {
+      this.game.players = []
+      var colors = ["red", "yellow", "blue", "green"]
+      for (var i = 0; i < this.online.players.length; i++) {
+        var p = this.online.players[i]        
+        this.game.players.push({ type: "network", name: p, money: 35, color: colors[i], position: 0, jailOutCards: 0, loseturn: false, gamesWon: 0 })
+      }
+
+      this.resetGame()
+
+      this.sendMessage({
+        player: this.online.name,
+        gameId: this.online.gameId,
+        state: this.game,
+        type: "start",
+      }, () => {        
+        // TODO: Check response
+        this.gameState = "game"        
+        this.startGame()
+      })
+    },
     resetGame() {
       const space = require("../assets/space.json")
       const nationalParks = require("../assets/nationalparks.json")
@@ -181,7 +283,7 @@ export default {
       }
       
       var i
-      this.bank = 5000
+      this.game.bank = 5000
       this.game.message = ""
       this.game.turn = ""
       this.game.board.center = 2
@@ -216,7 +318,7 @@ export default {
         this.game.board.squares[this.randomAvailableProperty()].owner = this.game.players[i].name
         this.game.board.squares[this.randomAvailableProperty()].owner = this.game.players[i].name
         this.game.board.squares[this.randomAvailableProperty()].owner = this.game.players[i].name        
-      }      
+      }
     },
     addPlayer() {
       var colors = ["red", "yellow", "blue", "green"]
@@ -251,13 +353,21 @@ export default {
        this.resetGame()
     },
     validateMoney(where) {
-      var total = this.bank
+      var total = this.game.bank
       for (var i = 0; i < this.game.players.length; i++) {
         total += this.game.players[i].money
       }
       total += this.game.board.center
 
       if (total != (5000 + (35 * this.game.players.length) + 2)) {
+        console.log('Should be '+ (5000 + (35 * this.game.players.length) + 2))
+        console.log(total)
+        console.log(this.game.bank)
+        console.log(this.game.players[0].money)
+        console.log(this.game.players[1].money)
+        console.log(this.game.players[2].money)
+        console.log(this.game.players[3].money)
+        console.log(this.game.board.center)
         alert(where)
       }
     },
@@ -318,12 +428,33 @@ export default {
       return -1
     },   
     startGame() {
-      this.game.turn = this.game.players[0].name
-      this.game.message = this.game.message = `${this.game.turn} rolling dice...`            
-      this.nextState(() => this.rollDice(this.game.players[0]))
       this.game.gameRunning = true
+
+      if (this.online.gameId) {
+        if (this.online.myGame) {
+          this.game.turn = this.game.players[0].name
+          this.game.message = this.game.message = `${this.game.turn} rolling dice...`
+          this.nextState(() => this.rollDice(this.game.players[0]), false)  // Techincally wasn't my turn until now
+        }
+      } else {        
+        this.game.turn = this.game.players[0].name      
+        this.game.message = this.game.message = `${this.game.turn} rolling dice...`            
+        this.nextState(() => this.rollDice(this.game.players[0]), false)
+      }
     },
-    nextState(handler, timeout = this.normalTimeout) {
+    nextState(handler, wasMyTurn, timeout = this.normalTimeout) {
+      console.log('Next State: ' + this.game.message)
+      // If it is my turn or it was my turn and now not my turn, send this message    
+      if (this.online.gameId && (wasMyTurn || this.online.name == this.game.turn)) {
+        console.log('Sending Update')
+        this.sendMessage({
+          player: this.online.name,
+          gameId: this.online.gameId,
+          state: this.game,
+          type: "update",
+        })
+      }
+
       setTimeout(handler, timeout)
     },
     yesPurchase() {
@@ -331,28 +462,31 @@ export default {
       var s = this.game.board.squares[player.position]
       s.owner = player.name
       player.money -= s.cost
-      this.bank += s.cost
-      this.game.askToBuy = false
-      this.passDice(player)
+      this.game.bank += s.cost
+      this.askToBuy = false
+      this.game.message = `${player.name} buys ${s.name}`
+      this.nextState(() => this.passDice(player), false)
     },
     noPurchase() {
       var player = this.findPlayer(this.game.turn)
-      this.game.askToBuy = false
+      this.askToBuy = false
       this.passDice(player)
+      this.game.message = `${player.name} declined`
+      this.nextState(() => this.passDice(player), false)
     },
     rollDice(player) {
       var i = Math.floor(Math.random() * 6) + 1      
       var newPosition = player.position + i      
       if (newPosition >= this.game.board.squares.length) {        
         player.money += 1
-        this.bank -= 1
+        this.game.bank -= 1
         newPosition = newPosition % this.game.board.squares.length
       }
       player.position = newPosition
 
       var s = this.game.board.squares[player.position]
       this.game.message = `${player.name} rolled a ${i} landing on ${this.getSquareDescription(s)}`
-      this.nextState(() => this.processSquare(player, s))
+      this.nextState(() => this.processSquare(player, s), false)
     },
     getSquareDescription(square) {
       switch (square.type) {
@@ -375,35 +509,35 @@ export default {
       return true
     },
     setupTrade(player) {
-      this.game.trade.mine = []
-      this.game.trade.options = []
+      this.trade.mine = []
+      this.trade.options = []
 
       var i, s      
       for (i = 0; i < this.game.board.squares.length; i++) {
         s = this.game.board.squares[i]
         if (s.owner == player.name && !this.isMonopoly(s)) {
           // Mine
-          this.game.trade.mine.push(s.name)
+          this.trade.mine.push(s.name)
         } else if (s.owner && s.owner != player.name && !this.isMonopoly(s)) {
           // Others
-          this.game.trade.options.push(s.name)
+          this.trade.options.push(s.name)
         }
       }
       
-      if (this.game.trade.mine.length > 0 && this.game.trade.options.length > 0) {
-        if (player.type == "human") {
-          this.game.trade.mySelected = this.game.trade.mine[0]
-          this.game.trade.optionSelected = this.game.trade.options[0]
-          this.game.trade.inTrade = true        
+      if (this.trade.mine.length > 0 && this.trade.options.length > 0) {
+        if (this.isHuman(player)) {
+          this.trade.mySelected = this.trade.mine[0]
+          this.trade.optionSelected = this.trade.options[0]
+          this.trade.inTrade = true        
         } else {
           // AI Trade
           if (player.type == "ai" || player.type == "horribleai") {
             var possibilities = []          
-            for (i = 0; i < this.game.trade.mine.length; i++) {
-              var m = this.findSquare(this.game.trade.mine[i])
-              for (var j = 0; j < this.game.trade.options.length; j++) {
+            for (i = 0; i < this.trade.mine.length; i++) {
+              var m = this.findSquare(this.trade.mine[i])
+              for (var j = 0; j < this.trade.options.length; j++) {
                 var score = 0              
-                var o = this.findSquare(this.game.trade.options[j])
+                var o = this.findSquare(this.trade.options[j])
                 score += (5 - m.cost) // Higher score for lower value of my card
                 score += o.cost // Higher score for higher value of their card
 
@@ -451,66 +585,66 @@ export default {
             t.mine.owner = t.option.owner
             t.option.owner = player.name
             this.game.message = `${t.mine.name} was traded for ${t.option.name}`
-            this.nextState(() => this.passDice(player))
+            this.nextState(() => this.passDice(player), false)
           } else if (player.type == "badai") {
-            var mine = this.findSquare(this.game.trade.mine[Math.floor(Math.random() * this.game.trade.mine.length)])
-            var option = this.findSquare(this.game.trade.options[Math.floor(Math.random() * this.game.trade.options.length)])
+            var mine = this.findSquare(this.trade.mine[Math.floor(Math.random() * this.trade.mine.length)])
+            var option = this.findSquare(this.trade.options[Math.floor(Math.random() * this.trade.options.length)])
             mine.owner = option.owner
             option.owner = player.name            
             this.game.message = `${mine.name} was traded for ${option.name}`
-            this.nextState(() => this.passDice(player))
+            this.nextState(() => this.passDice(player), false)
           }
         }
       } else {
         this.game.message = `A trade is not possible`
-        this.nextState(() => this.passDice(player))
+        this.nextState(() => this.passDice(player), false)
       }
     },
     yesTrade() {
       var player = this.findPlayer(this.game.turn)
-      var mine = this.findSquare(this.game.trade.mySelected)
-      var option = this.findSquare(this.game.trade.optionSelected)
+      var mine = this.findSquare(this.trade.mySelected)
+      var option = this.findSquare(this.trade.optionSelected)
       mine.owner = option.owner
       option.owner = player.name
-      this.game.trade.inTrade = false
+      this.trade.inTrade = false
       this.game.message = `${mine.name} was traded for ${option.name}`
-      this.nextState(() => this.passDice(player))
+      this.nextState(() => this.passDice(player), false)
     },
     setupTeamwork(player, money) {
-      this.game.teamwork.options = []
+      this.teamwork.options = []
       for (var i = 0; i < this.game.players.length; i++) {
         var p = this.game.players[i]
         if (p.name != player.name) {
-          this.game.teamwork.options.push(p.name)
+          this.teamwork.options.push(p.name)
         }
       }
 
-      this.game.teamwork.money = money
-      if (player.type == "human") {
-        this.game.teamwork.optionSelected = this.game.teamwork.options[0]
-        this.game.teamwork.inTeamwork = true        
+      this.teamwork.money = money
+      if (this.isHuman(player)) {
+        this.teamwork.optionSelected = this.teamwork.options[0]
+        this.teamwork.inTeamwork = true        
       } else {
         // AI Teamwork (all types of AI do the same thing)
-        this.game.teamwork.options.sort((a, b) => a.money > b.money ? 1 : -1)
-        var option = this.findPlayer(this.game.teamwork.options[0])
-        player.money += this.game.teamwork.money
-        option.money += this.game.teamwork.money
-        this.bank -= (this.game.teamwork.money * 2)
-        this.game.message = `${player.name} and ${option.name} both received $${this.game.teamwork.money}`
-        this.nextState(() => this.passDice(player))
+        this.teamwork.options.sort((a, b) => a.money > b.money ? 1 : -1)
+        var option = this.findPlayer(this.teamwork.options[0])
+        player.money += this.teamwork.money
+        option.money += this.teamwork.money
+        this.game.bank -= (this.teamwork.money * 2)
+        this.game.message = `${player.name} and ${option.name} both received $${this.teamwork.money}`
+        this.nextState(() => this.passDice(player), false)
       }
     },
     yesTeamwork() {
       var player = this.findPlayer(this.game.turn)
-      var option = this.findPlayer(this.game.teamwork.optionSelected)
+      var option = this.findPlayer(this.teamwork.optionSelected)
 
-      player.money += this.game.teamwork.money
-      option.money += this.game.teamwork.money
-      this.bank -= (this.game.teamwork.money * 2)
+      player.money += this.teamwork.money
+      option.money += this.teamwork.money
+      this.game.bank -= (this.teamwork.money * 2)
 
-      this.game.teamwork.inTeamwork = false
-      this.game.message = `${player.name} and ${option.name} both received $${this.game.teamwork.money}`
-      this.nextState(() => this.passDice(player))
+      this.teamwork.inTeamwork = false
+      this.game.message = `${player.name} and ${option.name} both received $${this.teamwork.money}`
+      this.nextState(() => this.passDice(player), false)
     },
     checkForWinner(player) {
       var winner = null
@@ -538,10 +672,23 @@ export default {
         this.resetGame()
 
         if (this.speed == "superspeed") {
-          this.nextState(() => this.startGame())
+          this.nextState(() => this.startGame(), false)
         }
         return true
       }
+      return false
+    },
+    isHuman(player) {
+      if (player.type == "human") {
+        return true
+      }
+
+      if (player.type == "network") {
+        if (player.name == this.online.name) {
+          return true
+        }
+      }
+
       return false
     },
     processSquare(player, s) {
@@ -549,33 +696,34 @@ export default {
         case "property": 
           if (!s.owner) {                    
             if (player.money > s.cost) {
-              if (player.type == "human") {
-                this.game.message = `Would ${player.name} like to buy ${s.name}`
-                this.game.askToBuy = true    
+              if (this.isHuman(player)) {
+                this.game.message = `Would ${player.name} like to buy ${s.name}`                
+                this.askToBuy = true    
               } else {
                 // AI always buys for now
                 if (player.type == "ai") {
                   s.owner = player.name
                   player.money -= s.cost
-                  this.bank += s.cost                
+                  this.game.bank += s.cost                
                   this.game.message = `${player.name} buys ${s.name}`
-                  this.nextState(() => this.passDice(player))
+                  this.nextState(() => this.passDice(player), false)
                 } else if (player.type == "badai" || player.type == "horribleai") {
                   var cutoff = player.type == "badai" ? 0.5 : 0.7
                   if (Math.random() > cutoff) {
                     s.owner = player.name
                     player.money -= s.cost
-                    this.bank += s.cost                
+                    this.game.bank += s.cost                
                     this.game.message = `${player.name} buys ${s.name}`
-                    this.nextState(() => this.passDice(player))
+                    this.nextState(() => this.passDice(player), false)
                   } else {
-                    this.nextState(() => this.passDice(player))
+                    this.game.message = `${player.name} declined`
+                    this.nextState(() => this.passDice(player), false)
                   }
                 }
               }
             } else {
               this.game.message = `${player.name} does not have enough money to buy ${s.name}`
-              this.nextState(() => this.passDice(player))
+              this.nextState(() => this.passDice(player), false)
             }
           } else if (s.owner != player.name) {
             var cost = s.cost
@@ -583,10 +731,10 @@ export default {
               cost *= 2
             }            
             this.game.message = `${player.name} owes ${s.owner} $${cost}`
-            this.nextState(() => this.payRent(player, s))            
+            this.nextState(() => this.payRent(player, s), false)            
           } else {
             this.game.message = `${player.name} already owns ${s.name}`
-            this.nextState(() => this.passDice(player))
+            this.nextState(() => this.passDice(player), false)
           }
           return // All states have been handled
         case "draw":
@@ -598,7 +746,7 @@ export default {
           this.game.message = card.text
           var i, p
           switch (card.type) {
-            case "paymiddle":               
+            case "paymiddle":                          
               player.money -= card.money
               if (this.checkForWinner(player)) {
                 return
@@ -612,8 +760,8 @@ export default {
                 newPosition += this.game.board.squares.length
               }
               player.position = newPosition
-              s = this.game.board.squares[player.position]
-              this.nextState(() => this.processSquare(player, s), this.cardTimeout)
+              s = this.game.board.squares[player.position]              
+              this.nextState(() => this.processSquare(player, s), false, this.cardTimeout)
               return
             case "trade":
               this.setupTrade(player)
@@ -668,20 +816,20 @@ export default {
               newPosition = this.game.board.squares.indexOf(s)
               if (newPosition < player.position) {
                 player.money += 1
-                this.bank -= 1
+                this.game.bank -= 1
               }
-              player.position = newPosition
-              this.nextState(() => this.processSquare(player, s), this.cardTimeout)
+              player.position = newPosition              
+              this.nextState(() => this.processSquare(player, s), false, this.cardTimeout)
               return
             case "go":
               s = this.game.board.squares[0]
-              player.position = 0
-              this.nextState(() => this.processSquare(player, s), this.cardTimeout)
+              player.position = 0              
+              this.nextState(() => this.processSquare(player, s), false, this.cardTimeout)
               return
             case "jail":
               s = this.findSquareByType("goToJail")
-              player.position = this.game.board.squares.indexOf(s)
-              this.nextState(() => this.processSquare(player, s), this.cardTimeout)
+              player.position = this.game.board.squares.indexOf(s)              
+              this.nextState(() => this.processSquare(player, s), false, this.cardTimeout)
               return
             case "unowned":
               i = player.position + 1
@@ -689,8 +837,8 @@ export default {
                 var test = this.game.board.squares[i % this.game.board.squares.length]
                 if (test.type == "property" && !test.owner) {
                   player.position = i % this.game.board.squares.length
-                  s = test
-                  this.nextState(() => this.processSquare(player, s), this.cardTimeout)
+                  s = test                  
+                  this.nextState(() => this.processSquare(player, s), false, this.cardTimeout)
                   return
                 }
                 i++
@@ -700,21 +848,21 @@ export default {
               for (i = 0; i < this.game.players.length; i++) {
                 p = this.game.players[i]                
                 p.money += card.money
-                this.bank -= card.money
+                this.game.bank -= card.money
               }
               this.validateMoney('bankerpayseveryone')
               break
             case "bankerpays":
               player.money += card.money
-              this.bank -= card.money
+              this.game.bank -= card.money
               this.validateMoney('bankerpays')
               break
-            case "extraturn":
-              this.nextState(() => this.rollDice(player), this.cardTimeout)
+            case "extraturn":              
+              this.nextState(() => this.rollDice(player), false, this.cardTimeout)
               return
           }
-
-          this.nextState(() => this.passDice(player), this.cardTimeout)
+          
+          this.nextState(() => this.passDice(player), false, this.cardTimeout)
           return
         case "goToJail":
           s = this.findSquareByType("jail")
@@ -725,7 +873,7 @@ export default {
             this.game.message = `${player.name} GOT LOST and used a ${this.game.jailOutCardText}`
           } else {            
             player.money -= 3
-            this.bank += 3
+            this.game.bank += 3
             this.validateMoney('jail')
             if (this.checkForWinner(player)) {
               return
@@ -733,7 +881,7 @@ export default {
             this.game.message = `${player.name} GOT LOST and paid $3`
           }
 
-          this.nextState(() => this.passDice(player))
+          this.nextState(() => this.passDice(player), false)
           return
         case "trade":
           this.setupTrade(player)
@@ -741,12 +889,12 @@ export default {
         case "cash":
           player.money += this.game.board.center
           this.game.board.center = 2
-          this.bank -= 2
+          this.game.bank -= 2
           this.validateMoney('cash')
           break
       }
 
-      this.nextState(() => this.passDice(player))      
+      this.nextState(() => this.passDice(player), false)      
     },
     payRent(player, s) {
       var cost = s.cost
@@ -774,7 +922,12 @@ export default {
       }
       this.game.turn = this.game.players[nextIndex].name
       this.game.message = `${this.game.turn} rolling dice...`
-      this.nextState(() => this.rollDice(this.game.players[nextIndex]))
+      if (this.online.gameId) {
+        this.nextState(() => {}, true)  // Do not call roleDice, the other network player will pick this up
+        // TODO: If other player lost their turn and there are only 2 players, need to roll dice here
+      } else {
+        this.nextState(() => this.rollDice(this.game.players[nextIndex]), true)
+      }
     },
     getTableRowStyle(player) {
       var style = "color:white;background-color:" + player.color + ";"
@@ -785,10 +938,60 @@ export default {
         style += "font-weight: bold;"
       } 
       return style
-    }
+    },
+    sendMessage(object, callback) {
+      object.id = this.callbacks.counter.toString()
+      if (callback) {        
+        this.callbacks.counter++
+        this.callbacks[object.id] = callback
+      }
+      this.$socket.send(JSON.stringify(object))
+    },
   },
   mounted() {
     this.resetGame()
+
+    this.$options.sockets.onmessage = (event) => {
+      var data = JSON.parse(event.data)
+      if (data.id) {
+        var callback = this.callbacks[data.id]
+        if (callback) {
+          callback(data)
+          delete this.callbacks[data.id]
+        }
+      } else if (data.type) {
+        switch (data.type) {
+          case "broadcastPlayerList":
+            this.online.players = data.players
+            break
+          case "broadcastStart":
+            this.game = data.state            
+            this.gameState = "game"
+            this.startGame()
+            break
+          case "broadcastUpdate":            
+            var oldTurn = this.game.turn
+            this.game = data.state
+            var newTurn = this.game.turn
+            if (oldTurn != newTurn && newTurn == this.online.name) {              
+              var p
+              for (var i = 0; i < this.game.players.length; i++) {
+                p = this.game.players[i]
+                if (p.name == newTurn) {
+                  break
+                }
+              }
+              console.log('Taking over: ' + newTurn)
+              this.rollDice(p)
+            }            
+            break
+          // TODO Handle winning message
+          // TODO Handle game over if player disconnects
+          // TODO Don't let people join in progress games
+          // TODO refactor into more components
+        }
+      }
+    }
   }
 }
 </script>
